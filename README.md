@@ -1,5 +1,5 @@
 # audio-dsp-toolchain
-A build-from-source audio DSP toolchain installation guide
+A build-from-source audio DSP toolchain installation guide (assumes systemd-linux with GCC 16)
 
 ### Start installing toolchain from binary sources in the order given below
 
@@ -234,3 +234,92 @@ sudo make install
   --enable-libmp3lame + --enable-gpl	Optional, MP3 is GPL-licensed
 - ***Encode to AAC (FDK-AAC)***
   --enable-libfdk-aac + --enable-nonfree	Optional, highest quality AAC, non-free
+
+
+## (OPTIONAL) Install Audacity from sources
+
+### Download Audacity from Linux sources (don't need to choose an AppImage file, just the audacity sources):
+```bash
+# from:
+https://www.fosshub.com/Audacity-old.html
+
+# example:
+wget https://github.com/audacity/audacity/releases/download/Audacity-3.7.2/audacity-sources-3.7.2.tar.gz
+tar -xzvf audacity-sources-3.7.2.tar.gz
+cd audacity-sources-3.7.2
+```
+
+### Then extract and do:
+```bash
+sudo pacman -S nasm
+sudo pacman -S --needed wxwidgets-common wxwidgets-gtk3 rapidjson catch2-v2
+sudo pacman -S --needed lilv lv2 serd sord sratom suil vamp-plugin-sdk
+sudo pacman -S portmidi libid3tag opusfile
+
+python3 -m venv .env
+source .env/bin/activate
+pip install conan
+mkdir build
+cd build/
+
+nano ../libraries/lib-note-track/CMakeLists.txt
+# and add above audacity_library(...):
+find_package(PortMidi CONFIG REQUIRED)
+if(TARGET PortMidi::portmidi AND NOT TARGET portmidi::portmidi)
+  add_library(portmidi::portmidi ALIAS PortMidi::portmidi)
+endif()
+
+cmake -S .. -B build-system -Daudacity_lib_preference=system -Daudacity_use_midi=system -Daudacity_has_vst3=OFF -DCMAKE_C_FLAGS=-DPROTOTYPES -DPortMidi_DIR=/usr/lib/cmake/PortMidi -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS="-fPIC -I/usr/include" -DCMAKE_LD_FLAGS="-L/usr/lib" -DCMAKE_PREFIX_PATH="/usr;/lib;/usr/lib" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+cmake --build build-system -j8
+sudo cmake --install build-system
+audacity
+```
+
+#### Possibly Supported Export Types:
+- Wav 
+- Mp3
+- FLAC
+- Ogg Vorbis
+- M4A (AAC) Files (FFmpeg)
+- AC3 Files (FFmpeg)
+- AMR (narrowband) Files (FFmpeg)
+- WMA (version 2) Files FFmpeg
+- Custom FFmpeg Export
+- Mp2 Files
+
+#### Channels: 
+- Mono 
+- Stereo
+
+#### Possibly Supported Sample Rates: 
+- 8000Hz 
+- 11025Hz 
+- 16000Hz 
+- 22050Hz 
+- 32000Hz 
+- 44100Hz 
+- 48000Hz 
+- 88200Hz 
+- 96000Hz 
+- 176400Hz 
+- 192000Hz 
+- 352800Hz 
+- 384000Hz
+
+#### Possibly Supported Encodings: 
+- Signed 16-bit PCM 
+- Signed 24-bit PCM 
+- Signed 32-bit PCM 
+- Unsinged 8-bit PCM 
+- 32-bit float 
+- 64-bit float 
+- U-LAW 
+- A-LAW 
+- IMA ADPCM 
+- Microsoft ADPCM 
+- GSM6.10 
+- 32Kbps G721 ADPCM 
+- 16Kbps NMS ADPCM 
+- 24Kbps ADPCM 
+- 32Kbps NMS ADPCM
