@@ -1,6 +1,17 @@
 # audio-dsp-toolchain
 A build-from-source audio DSP toolchain installation guide (assumes systemd-linux with GCC 16)
 
+### If you have finished with installing from sources, test with:
+```bash
+# compile with:
+g++ test_audio.cpp -o test_audio -lsndfile
+# or with: g++ test_audio.cpp -o test_audio $(pkg-config --cflags --libs sndfile)
+# and run with:
+./test_audio
+# it should give:
+File created successfully.
+```
+
 ### Start installing toolchain from binary sources in the order given below
 
 #### LIBOGG
